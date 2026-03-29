@@ -6,3 +6,11 @@ command:
   - "8080"
   - --server.address
   - "0.0.0.0"
+
+env:
+  - name: DATABRICKS_TOKEN
+    value: "dapie037123d62518d61bcb67d572b06a42e"
+  - name: DATABRICKS_WAREHOUSE_HTTP_PATH
+    value: "/sql/1.0/warehouses/5a1abe758715a807"
+  - name: DATABRICKS_SERVER_HOSTNAME
+    value: "dbc-6a683a13-f75d.cloud.databricks.com"
