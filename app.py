@@ -13,9 +13,9 @@ st.set_page_config(
 @st.cache_resource
 def get_connection():
     return sql.connect(
-        server_hostname = "dbc-6a683a13-f75d.cloud.databricks.com",
-        http_path       = "/sql/1.0/warehouses/5a1abe758715a807",
-        access_token    = "dapie037123d62518d61bcb67d572b06a42e"
+        server_hostname = os.getenv("DATABRICKS_SERVER_HOSTNAME"),
+        http_path       = os.getenv("DATABRICKS_WAREHOUSE_HTTP_PATH"),
+        access_token    = os.getenv("DATABRICKS_TOKEN")
     )
 
 @st.cache_data(ttl=300)
