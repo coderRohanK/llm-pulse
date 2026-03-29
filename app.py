@@ -2,10 +2,8 @@ import streamlit as st
 from databricks import sql
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import os
 
-# ── Page config ────────────────────────────────────────────
 st.set_page_config(
     page_title = "LLM Pulse",
     page_icon  = "⚡",
@@ -16,19 +14,23 @@ st.set_page_config(
 @st.cache_resource
 def get_connection():
     return sql.connect(
-        server_hostname = os.getenv("DATABRICKS_HOST"),
-        http_path       = os.getenv("DATABRICKS_HTTP_PATH"),
-        access_token    = os.getenv("DATABRICKS_TOKEN")
+        server_hostname = "dbc-6a683a13-f75d.cloud.databricks.com",
+        http_path       = "/sql/1.0/warehouses/5a1abe758715a807",
+        access_token    = "dapie037123d62518d61bcb67d572b06a42e"
     )
 
-@st.cache_data(ttl=300)   # cache for 5 minutes
+@st.cache_data(ttl=300)
 def run_query(query):
-    conn   = get_connection()
-    cursor = conn.cursor()
-    cursor.execute(query)
-    cols = [d[0] for d in cursor.description]
-    rows = cursor.fetchall()
-    return pd.DataFrame(rows, columns=cols)
+    try:
+        conn   = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(query)
+        cols = [d[0] for d in cursor.description]
+        rows = cursor.fetchall()
+        return pd.DataFrame(rows, columns=cols)
+    except Exception as e:
+        st.error(f"Query failed: {e}")
+        return pd.DataFrame()
 
 # ── Sidebar navigation ─────────────────────────────────────
 st.sidebar.image("https://upload.wikimedia.org/wikipedia/commons/6/63/Databricks_Logo.png", width=160)
