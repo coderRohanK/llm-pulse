@@ -1,0 +1,651 @@
+{
+  "datasets": [
+    {
+      "name": "1844bc79",
+      "displayName": "daily_cost_trend",
+      "queryLines": [
+        "SELECT\r\n",
+        "    event_date,\r\n",
+        "    team,\r\n",
+        "    total_cost_usd,\r\n",
+        "    rolling_7d_avg_cost,\r\n",
+        "    total_calls\r\n",
+        "FROM llm_pulse_dev.gold.daily_cost_by_team\r\n",
+        "ORDER BY event_date"
+      ]
+    },
+    {
+      "name": "a40a6bda",
+      "displayName": "Model Performance Cost and Metrics Summary",
+      "queryLines": [
+        "SELECT\r\n",
+        "    model,\r\n",
+        "    ROUND(SUM(total_cost_usd), 2)   AS total_spend_usd,\r\n",
+        "    SUM(total_calls)                AS total_calls,\r\n",
+        "    ROUND(AVG(error_rate_pct), 2)   AS avg_error_rate_pct,\r\n",
+        "    ROUND(AVG(avg_latency_ms), 0)   AS avg_latency_ms\r\n",
+        "FROM llm_pulse_dev.gold.model_performance_summary\r\n",
+        "GROUP BY model\r\n",
+        "ORDER BY total_spend_usd DESC"
+      ]
+    },
+    {
+      "name": "4ca0082c",
+      "displayName": "Top Features and Teams by Cost and Calls Summary",
+      "queryLines": [
+        "SELECT\r\n",
+        "    feature,\r\n",
+        "    team,\r\n",
+        "    ROUND(SUM(total_cost_usd), 2) AS total_spend_usd,\r\n",
+        "    SUM(total_calls)              AS total_calls\r\n",
+        "FROM llm_pulse_dev.gold.feature_cost_breakdown\r\n",
+        "GROUP BY feature, team\r\n",
+        "ORDER BY total_spend_usd DESC\r\n",
+        "LIMIT 15"
+      ]
+    },
+    {
+      "name": "31597fff",
+      "displayName": "Model Quality Scores and Trends Over Time",
+      "queryLines": [
+        "SELECT\r\n",
+        "    feedback_date,\r\n",
+        "    model,\r\n",
+        "    AVG(quality_score_pct)          AS avg_quality_score,\r\n",
+        "    AVG(rolling_7d_quality_score)   AS avg_rolling_quality\r\n",
+        "FROM llm_pulse_dev.gold.quality_score_daily\r\n",
+        "GROUP BY feedback_date, model\r\n",
+        "ORDER BY feedback_date"
+      ]
+    },
+    {
+      "name": "dc6b9b9f",
+      "displayName": "Forecasted Team Cost Estimates by Prediction Date",
+      "queryLines": [
+        "SELECT\r\n",
+        "    prediction_date,\r\n",
+        "    team,\r\n",
+        "    predicted_cost_usd,\r\n",
+        "    prediction_horizon_days\r\n",
+        "FROM llm_pulse_dev.gold.cost_predictions\r\n",
+        "ORDER BY prediction_date, team"
+      ]
+    },
+    {
+      "name": "05f7b5d0",
+      "displayName": "Alert Type and Severity Summary Report",
+      "queryLines": [
+        "SELECT\r\n",
+        "    alert_severity,\r\n",
+        "    model,\r\n",
+        "    COUNT(*)                        AS total_alerts,\r\n",
+        "    MIN(feedback_date)              AS first_seen,\r\n",
+        "    MAX(feedback_date)              AS last_seen\r\n",
+        "FROM llm_pulse_dev.gold.quality_alerts\r\n",
+        "GROUP BY alert_severity, model\r\n",
+        "ORDER BY total_alerts DESC"
+      ]
+    },
+    {
+      "name": "09ac533c",
+      "displayName": "Monthly Team Cost Summary in USD",
+      "queryLines": [
+        "SELECT ROUND(SUM(total_cost_usd), 2) AS total_spend_usd\r\n",
+        "FROM llm_pulse_dev.gold.daily_cost_by_team\r\n",
+        "WHERE event_date >= DATE_TRUNC('month', CURRENT_DATE())"
+      ]
+    },
+    {
+      "name": "0474bbd2",
+      "displayName": "Aggregate Total Calls by Team Daily Summary",
+      "queryLines": [
+        "SELECT SUM(total_calls) AS total_calls\r\n",
+        "FROM llm_pulse_dev.gold.daily_cost_by_team"
+      ]
+    },
+    {
+      "name": "045b978e",
+      "displayName": "Count of High Severity Alerts Summary",
+      "queryLines": [
+        "SELECT COUNT(*) AS critical_alerts\r\n",
+        "FROM llm_pulse_dev.gold.quality_alerts\r\n",
+        "WHERE alert_severity = 'critical'"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "290cf74d",
+      "displayName": "Untitled page",
+      "layout": [
+        {
+          "widget": {
+            "name": "daily-llm-spend-by-team-7-day-rolling-average",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "1844bc79",
+                  "fields": [
+                    {
+                      "name": "team",
+                      "expression": "`team`"
+                    },
+                    {
+                      "name": "monthly(event_date)",
+                      "expression": "DATE_TRUNC(\"MONTH\", `event_date`)"
+                    },
+                    {
+                      "name": "sum(rolling_7d_avg_cost)",
+                      "expression": "SUM(`rolling_7d_avg_cost`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "showTitle": true,
+                "title": "Daily LLM spend by team (7-day rolling average)"
+              },
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "monthly(event_date)",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(rolling_7d_avg_cost)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "team",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "total-spend-by-model",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "a40a6bda",
+                  "fields": [
+                    {
+                      "name": "model",
+                      "expression": "`model`"
+                    },
+                    {
+                      "name": "sum(total_spend_usd)",
+                      "expression": "SUM(`total_spend_usd`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "showTitle": true,
+                "title": "Total spend by model"
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "model",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(total_spend_usd)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 2,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "most-expensive-features-by-team",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "4ca0082c",
+                  "fields": [
+                    {
+                      "name": "team",
+                      "expression": "`team`"
+                    },
+                    {
+                      "name": "sum(total_spend_usd)",
+                      "expression": "SUM(`total_spend_usd`)"
+                    },
+                    {
+                      "name": "feature",
+                      "expression": "`feature`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "showTitle": true,
+                "title": "Most expensive features by team"
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "sum(total_spend_usd)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "feature",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "color": {
+                  "fieldName": "team",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "model-quality-score-7-day-rolling",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "31597fff",
+                  "fields": [
+                    {
+                      "name": "model",
+                      "expression": "`model`"
+                    },
+                    {
+                      "name": "monthly(feedback_date)",
+                      "expression": "DATE_TRUNC(\"MONTH\", `feedback_date`)"
+                    },
+                    {
+                      "name": "sum(avg_quality_score)",
+                      "expression": "SUM(`avg_quality_score`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "showTitle": true,
+                "title": "Model quality score over time (7-day rolling)"
+              },
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "monthly(feedback_date)",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(avg_quality_score)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "model",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 9,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "30-day-cost-forecast-team-ml-predicted",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "dc6b9b9f",
+                  "fields": [
+                    {
+                      "name": "team",
+                      "expression": "`team`"
+                    },
+                    {
+                      "name": "monthly(prediction_date)",
+                      "expression": "DATE_TRUNC(\"MONTH\", `prediction_date`)"
+                    },
+                    {
+                      "name": "sum(predicted_cost_usd)",
+                      "expression": "SUM(`predicted_cost_usd`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "showTitle": true,
+                "title": "30-day cost forecast by team (ML predicted)"
+              },
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "monthly(prediction_date)",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(predicted_cost_usd)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "team",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 16,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "total-spend-this-month",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "09ac533c",
+                  "fields": [
+                    {
+                      "name": "sum(total_spend_usd)",
+                      "expression": "SUM(`total_spend_usd`)"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "IN_RANGE(`total_spend_usd`, 0D, 100D)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Total spend this month"
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(total_spend_usd)"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "total-api-calls",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "0474bbd2",
+                  "fields": [
+                    {
+                      "name": "sum(total_calls)",
+                      "expression": "SUM(`total_calls`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Total API calls"
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(total_calls)"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 0,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "active-critical-alerts",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "045b978e",
+                  "fields": [
+                    {
+                      "name": "sum(critical_alerts)",
+                      "expression": "SUM(`critical_alerts`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Active critical alerts"
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(critical_alerts)"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 0,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "active-alerts-summary",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "05f7b5d0",
+                  "fields": [
+                    {
+                      "name": "total_alerts",
+                      "expression": "`total_alerts`"
+                    },
+                    {
+                      "name": "alert_severity",
+                      "expression": "`alert_severity`"
+                    },
+                    {
+                      "name": "model",
+                      "expression": "`model`"
+                    },
+                    {
+                      "name": "first_seen",
+                      "expression": "`first_seen`"
+                    },
+                    {
+                      "name": "last_seen",
+                      "expression": "`last_seen`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "displayRowNumbers": true,
+              "frame": {
+                "showTitle": true,
+                "title": "Active alerts summary"
+              },
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "total_alerts"
+                  },
+                  {
+                    "fieldName": "alert_severity"
+                  },
+                  {
+                    "fieldName": "model"
+                  },
+                  {
+                    "fieldName": "first_seen"
+                  },
+                  {
+                    "fieldName": "last_seen"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 16,
+            "width": 6,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "0a3c46f3",
+      "displayName": "Global Filters",
+      "layout": [
+        {
+          "widget": {
+            "name": "7039890d",
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {},
+              "frame": {
+                "showTitle": true
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 2
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
