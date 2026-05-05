@@ -569,16 +569,6 @@ WAREHOUSE = "your-sql-warehouse-id"
 
 ---
 
-## 👤 Author
-
-**Your Name**  
-Data Engineering & ML Intern  
-📧 your.email@example.com  
-🔗 [LinkedIn](https://linkedin.com/in/yourprofile)  
-🐙 [GitHub](https://github.com/yourusername)
-
----
-
 ## 📄 License
 
 This project is open source and available under the [MIT License](LICENSE).
