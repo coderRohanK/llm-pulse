@@ -506,20 +506,16 @@ WAREHOUSE = "your-sql-warehouse-id"
 
 ## 📸 Screenshots
 
-### AIBI Dashboard
-![Dashboard showing cost trends, model spend, quality scores]
+### Tables
+<img width="222" height="335" alt="image" src="https://github.com/user-attachments/assets/3cf1f427-44ee-4d88-a4de-7ff32209710a" />
 
-### Streamlit App — Finance View
-![Finance view with KPIs, cost trend, model breakdown, forecast]
-
-### Streamlit App — Alerts View
-![Alerts table showing 71 anomaly alerts with severity filter]
 
 ### MLflow Experiment
-![MLflow run showing MAE=0.036, RMSE=0.048, feature importance chart]
+<img width="814" height="349" alt="image" src="https://github.com/user-attachments/assets/960074f5-4273-4362-837d-c19025535c5f" />
+
 
 ### Unity Catalog Lineage
-![Lineage graph showing S3 → bronze → silver → gold flow]
+<img width="386" height="305" alt="image" src="https://github.com/user-attachments/assets/cea340c1-6297-4c61-a071-980faa473478" />
 
 ---
 
